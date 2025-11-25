@@ -7,7 +7,6 @@ public class Student extends Person {
     private String grade;
     private static final int MAX_COURSES = 10;
 
-    // Constructor
     public Student(String name, int age, String grade) {
         super(name, age);
         this.grade = grade;
@@ -15,64 +14,44 @@ public class Student extends Person {
         this.courseCount = 0;
     }
 
-    // Add a course
     public boolean addCourse(Course course) {
         if (courseCount < MAX_COURSES) {
-            courses[courseCount] = course;
-            courseCount++;
+            courses[courseCount++] = course;
             return true;
-        } else {
-            System.out.println("Cannot add more courses. Maximum limit reached.");
-            return false;
         }
+        System.out.println("Cannot add more courses. Maximum limit reached.");
+        return false;
     }
 
-    // Remove a course by ID
-    public boolean removeCourse(String courseId) {
+    public boolean removeCourse(String courseName) {
         for (int i = 0; i < courseCount; i++) {
-            if (courses[i].getId().equals(courseId)) {
+            if (courses[i].getName().equals(courseName)) {
                 for (int j = i; j < courseCount - 1; j++) {
                     courses[j] = courses[j + 1];
                 }
-                courses[courseCount - 1] = null;
-                courseCount--;
+                courses[--courseCount] = null;
                 return true;
             }
         }
         return false;
     }
 
-    // Getters and setters
-    public String getGrade() {
-        return grade;
-    }
-
-    public void setGrade(String grade) {
-        this.grade = grade;
-    }
-
-    public int getCourseCount() {
-        return courseCount;
-    }
+    public String getGrade() { return grade; }
+    public void setGrade(String grade) { this.grade = grade; }
+    public int getCourseCount() { return courseCount; }
 
     public int getTotalCredits() {
         int total = 0;
-        for (int i = 0; i < courseCount; i++) {
-            total += courses[i].getCredits();
-        }
+        for (int i = 0; i < courseCount; i++) total += courses[i].getCredits();
         return total;
     }
 
-    // Display student info
     @Override
     public void display() {
         super.display();
         System.out.println("Grade: " + grade);
         System.out.println("Courses (" + courseCount + "/" + MAX_COURSES + "):");
-        for (int i = 0; i < courseCount; i++) {
-            System.out.println("\nCourse " + (i + 1) + ":");
-            courses[i].display();
-        }
+        for (int i = 0; i < courseCount; i++) courses[i].display();
         System.out.println("Total Credits: " + getTotalCredits());
     }
 }

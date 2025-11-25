@@ -4,14 +4,11 @@ public class Person {
 
     protected String name;
     protected int age;
-    protected String id;
-    private static int nextId = 1;
 
     // Constructor
     public Person(String name, int age) {
         this.name = name;
         this.age = age;
-        this.id = "P" + nextId++;
     }
 
     // Getters
@@ -21,10 +18,6 @@ public class Person {
 
     public int getAge() {
         return age;
-    }
-
-    public String getId() {
-        return id;
     }
 
     // Setters
@@ -42,6 +35,5 @@ public class Person {
     public void display() {
         System.out.println("Name: " + name);
         System.out.println("Age: " + age);
-        System.out.println("ID: " + id);
     }
 }

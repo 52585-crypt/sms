@@ -1,110 +1,184 @@
 package com.mycompany.smsnetbeans;
 
-import java.io.*;
+import java.sql.*;
+import javax.swing.JOptionPane;
 
 public class FileUtil {
 
-    // File names for storing data
-    private static final String COURSE_FILE = "courses.txt";
-    private static final String STUDENT_FILE = "students.txt";
-    private static final String TEACHER_FILE = "teachers.txt";
-
-    // Save courses to file
+    // ----------------- COURSES -----------------
+    // Save multiple courses
     public static void saveCourses(Course[] courses, int count) {
-        try (FileWriter writer = new FileWriter(COURSE_FILE)) {
-            writer.write(count + "\n");
+        String sql = "INSERT INTO courses (name, credits) VALUES (?, ?)";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             for (int i = 0; i < count; i++) {
-                Course course = courses[i];
-                writer.write(course.getName() + "," + course.getCredits() + "\n");
+                stmt.setString(1, courses[i].getName());
+                stmt.setInt(2, courses[i].getCredits());
+                stmt.executeUpdate();
             }
-            System.out.println("Courses saved successfully!");
-        } catch (IOException e) {
-            System.out.println("Error saving courses: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Courses saved successfully!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error saving courses: " + e.getMessage());
         }
     }
 
-    // Save students to file
-    public static void saveStudents(Student[] students, int count) {
-        try (FileWriter writer = new FileWriter(STUDENT_FILE)) {
-            writer.write(count + "\n");
-            for (int i = 0; i < count; i++) {
-                Student student = students[i];
-                writer.write(student.getName() + "," + student.getAge() + "," + student.getGrade() + "\n");
-            }
-            System.out.println("Students saved successfully!");
-        } catch (IOException e) {
-            System.out.println("Error saving students: " + e.getMessage());
-        }
-    }
-
-    // Save teachers to file
-    public static void saveTeachers(Teacher[] teachers, int count) {
-        try (FileWriter writer = new FileWriter(TEACHER_FILE)) {
-            writer.write(count + "\n");
-            for (int i = 0; i < count; i++) {
-                Teacher teacher = teachers[i];
-                writer.write(teacher.getName() + "," + teacher.getAge() + "," + teacher.getSalary() + "\n");
-            }
-            System.out.println("Teachers saved successfully!");
-        } catch (IOException e) {
-            System.out.println("Error saving teachers: " + e.getMessage());
-        }
-    }
-
-    // Load courses from file
+    // Load multiple courses
     public static int loadCourses(Course[] courses) {
-        File file = new File(COURSE_FILE);
-        if (!file.exists()) return 0;
+        int count = 0;
+        String sql = "SELECT name, credits FROM courses";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            int count = Integer.parseInt(reader.readLine());
-            for (int i = 0; i < count; i++) {
-                String[] parts = reader.readLine().split(",");
-                courses[i] = new Course(parts[0], Integer.parseInt(parts[1]));
+            while (rs.next() && count < courses.length) {
+                String name = rs.getString("name");
+                int credits = rs.getInt("credits");
+                courses[count++] = new Course(name, credits);
             }
-            System.out.println("Courses loaded successfully!");
-            return count;
-        } catch (IOException | NumberFormatException e) {
-            System.out.println("Error loading courses: " + e.getMessage());
-            return 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error loading courses: " + e.getMessage());
+        }
+        return count;
+    }
+
+    // Save single course
+    public static boolean saveCourse(Course course) {
+        String sql = "INSERT INTO courses (name, credits) VALUES (?, ?)";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, course.getName());
+            stmt.setInt(2, course.getCredits());
+            stmt.executeUpdate();
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
-    // Load students from file
+    // ----------------- STUDENTS -----------------
+    // Save multiple students
+    public static void saveStudents(Student[] students, int count) {
+        String sql = "INSERT INTO students (name, age, grade) VALUES (?, ?, ?)";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < count; i++) {
+                stmt.setString(1, students[i].getName());
+                stmt.setInt(2, students[i].getAge());
+                stmt.setString(3, students[i].getGrade());
+                stmt.executeUpdate();
+            }
+            JOptionPane.showMessageDialog(null, "Students saved successfully!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error saving students: " + e.getMessage());
+        }
+    }
+
+    // Load multiple students
     public static int loadStudents(Student[] students) {
-        File file = new File(STUDENT_FILE);
-        if (!file.exists()) return 0;
+        int count = 0;
+        String sql = "SELECT name, age, grade FROM students";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            int count = Integer.parseInt(reader.readLine());
-            for (int i = 0; i < count; i++) {
-                String[] parts = reader.readLine().split(",");
-                students[i] = new Student(parts[0], Integer.parseInt(parts[1]), parts[2]);
+            while (rs.next() && count < students.length) {
+                String name = rs.getString("name");
+                int age = rs.getInt("age");
+                String grade = rs.getString("grade");
+                students[count++] = new Student(name, age, grade);
             }
-            System.out.println("Students loaded successfully!");
-            return count;
-        } catch (IOException | NumberFormatException e) {
-            System.out.println("Error loading students: " + e.getMessage());
-            return 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error loading students: " + e.getMessage());
+        }
+        return count;
+    }
+
+    // Save single student
+    public static boolean saveStudent(Student student) {
+        String sql = "INSERT INTO students (name, age, grade) VALUES (?, ?, ?)";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, student.getName());
+            stmt.setInt(2, student.getAge());
+            stmt.setString(3, student.getGrade());
+            stmt.executeUpdate();
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
-    // Load teachers from file
-    public static int loadTeachers(Teacher[] teachers) {
-        File file = new File(TEACHER_FILE);
-        if (!file.exists()) return 0;
+    // ----------------- TEACHERS -----------------
+    // Save multiple teachers
+    public static void saveTeachers(Teacher[] teachers, int count) {
+        String sql = "INSERT INTO teachers (name, age, salary) VALUES (?, ?, ?)";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            int count = Integer.parseInt(reader.readLine());
             for (int i = 0; i < count; i++) {
-                String[] parts = reader.readLine().split(",");
-                teachers[i] = new Teacher(parts[0], Integer.parseInt(parts[1]), Double.parseDouble(parts[2]));
+                stmt.setString(1, teachers[i].getName());
+                stmt.setInt(2, teachers[i].getAge());
+                stmt.setDouble(3, teachers[i].getSalary());
+                stmt.executeUpdate();
             }
-            System.out.println("Teachers loaded successfully!");
-            return count;
-        } catch (IOException | NumberFormatException e) {
-            System.out.println("Error loading teachers: " + e.getMessage());
-            return 0;
+            JOptionPane.showMessageDialog(null, "Teachers saved successfully!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error saving teachers: " + e.getMessage());
+        }
+    }
+
+    // Load multiple teachers
+    public static int loadTeachers(Teacher[] teachers) {
+        int count = 0;
+        String sql = "SELECT name, age, salary FROM teachers";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next() && count < teachers.length) {
+                String name = rs.getString("name");
+                int age = rs.getInt("age");
+                double salary = rs.getDouble("salary");
+                teachers[count++] = new Teacher(name, age, salary);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error loading teachers: " + e.getMessage());
+        }
+        return count;
+    }
+
+    // Save single teacher
+    public static boolean saveTeacher(Teacher teacher) {
+        String sql = "INSERT INTO teachers (name, age, salary) VALUES (?, ?, ?)";
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, teacher.getName());
+            stmt.setInt(2, teacher.getAge());
+            stmt.setDouble(3, teacher.getSalary());
+            stmt.executeUpdate();
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
